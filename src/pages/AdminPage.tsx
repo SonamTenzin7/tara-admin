@@ -74,7 +74,7 @@ const AdminPage: React.FC = () => {
                   border: "none",
                   background: "hsl(var(--background))",
                   color: "hsl(var(--foreground))",
-                  boxShadow: "var(--shadow-neu-inset)",
+                  boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
                   outline: "none",
                   fontSize: "0.875rem",
                   fontFamily: "inherit",
@@ -85,7 +85,8 @@ const AdminPage: React.FC = () => {
                     "var(--shadow-neu-inset), 0 0 0 2px hsla(180, 100%, 35%, 0.45)"
                 }}
                 onBlur={(e) => {
-                  e.currentTarget.style.boxShadow = "var(--shadow-neu-inset)"
+                  e.currentTarget.style.boxShadow =
+                    "0 0 15px hsla(var(--primary), 0.1)"
                 }}
                 placeholder="Enter ADMIN_DEV_SECRET"
               />

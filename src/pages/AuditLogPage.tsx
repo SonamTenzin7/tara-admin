@@ -223,7 +223,7 @@ function JsonDiff({
               {!added && bVal !== undefined && (
                 <span
                   style={{
-                    background: "hsla(var(--neu-dark)/0.18)",
+                    background: "rgba(255, 255, 255, 0.05)",
                     color: changed
                       ? "hsl(var(--muted-foreground))"
                       : "hsl(var(--foreground))",
@@ -233,7 +233,7 @@ function JsonDiff({
                     textDecoration: changed ? "line-through" : "none",
                     opacity: changed ? 0.5 : 1,
                     wordBreak: "break-all",
-                    boxShadow: "var(--shadow-neu-inset)",
+                    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
                   }}
                 >
                   {JSON.stringify(bVal)}
@@ -242,13 +242,13 @@ function JsonDiff({
               {(changed || added) && aVal !== undefined && (
                 <span
                   style={{
-                    background: "hsla(var(--neu-light)/0.18)",
+                    background: "rgba(255, 255, 255, 0.1)",
                     color: "hsl(var(--foreground))",
                     padding: "2px 8px",
                     borderRadius: 4,
                     fontFamily: "monospace",
                     wordBreak: "break-all",
-                    boxShadow: "var(--shadow-neu-outer)",
+                    boxShadow: "var(--glass-shadow)",
                   }}
                 >
                   {JSON.stringify(aVal)}
@@ -316,7 +316,7 @@ function EventCard({ log, isNew }: { log: AuditLog; isNew: boolean }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "var(--shadow-neu-outer)",
+            boxShadow: "var(--glass-shadow)",
           }}
         >
           <ActionIcon size={15} color="hsl(var(--muted-foreground))" />
@@ -356,7 +356,7 @@ function EventCard({ log, isNew }: { log: AuditLog; isNew: boolean }) {
                 letterSpacing: "0.05em",
                 textTransform: "uppercase" as const,
                 whiteSpace: "nowrap" as const,
-                boxShadow: "var(--shadow-neu-inset)",
+                boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
               }}
             >
               {cfg.label}
@@ -451,7 +451,7 @@ function EventCard({ log, isNew }: { log: AuditLog; isNew: boolean }) {
               color: "hsl(var(--muted-foreground))",
               padding: "2px 6px",
               borderRadius: 4,
-              boxShadow: "var(--shadow-neu-inset)",
+              boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
               background: "hsl(var(--background))",
             }}
           >
@@ -470,12 +470,12 @@ function EventCard({ log, isNew }: { log: AuditLog; isNew: boolean }) {
       {expanded && hasDetail && (
         <div
           style={{
-            borderTop: "1px solid hsla(var(--neu-dark)/0.25)",
+            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
             padding: "1rem",
             display: "flex",
             gap: 28,
             flexWrap: "wrap" as const,
-            background: "hsla(var(--neu-dark)/0.06)",
+            background: "rgba(255, 255, 255, 0.02)",
           }}
         >
           {hasDiff && (
@@ -614,7 +614,7 @@ function DateSeparator({ label, count }: { label: string; count: number }) {
       }}
     >
       <div
-        style={{ flex: 1, height: 1, background: "hsla(var(--neu-dark)/0.3)" }}
+        style={{ flex: 1, height: 1, background: "rgba(255, 255, 255, 0.15)" }}
       />
       <span
         style={{
@@ -625,7 +625,7 @@ function DateSeparator({ label, count }: { label: string; count: number }) {
           color: "hsl(var(--muted-foreground))",
           padding: "3px 10px",
           borderRadius: 6,
-          boxShadow: "var(--shadow-neu-inset)",
+          boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
           background: "hsl(var(--background))",
           whiteSpace: "nowrap" as const,
         }}
@@ -633,7 +633,7 @@ function DateSeparator({ label, count }: { label: string; count: number }) {
         {label} · {count}
       </span>
       <div
-        style={{ flex: 1, height: 1, background: "hsla(var(--neu-dark)/0.3)" }}
+        style={{ flex: 1, height: 1, background: "rgba(255, 255, 255, 0.15)" }}
       />
     </div>
   )
@@ -835,7 +835,7 @@ export function AuditLogPage() {
     padding: "6px 10px",
     color: "hsl(var(--foreground))",
     fontSize: "0.82rem",
-    boxShadow: "var(--shadow-neu-inset)",
+    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
     outline: "none",
     fontFamily: "inherit",
   }
@@ -869,7 +869,7 @@ export function AuditLogPage() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "var(--shadow-neu-outer)",
+                boxShadow: "var(--glass-shadow)",
               }}
             >
               <Shield size={18} color="hsl(var(--muted-foreground))" />
@@ -955,7 +955,7 @@ export function AuditLogPage() {
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
-                boxShadow: "var(--shadow-neu-outer)",
+                boxShadow: "var(--glass-shadow)",
               }}
             >
               <s.Icon size={15} color="hsl(var(--muted-foreground))" />

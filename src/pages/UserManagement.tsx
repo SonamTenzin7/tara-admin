@@ -183,7 +183,7 @@ const UserManagement: React.FC = () => {
     padding: "7px 12px",
     color: "hsl(var(--foreground))",
     fontSize: "0.85rem",
-    boxShadow: "var(--shadow-neu-inset)",
+    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
     outline: "none",
     fontFamily: "inherit",
   }
@@ -345,7 +345,7 @@ const UserManagement: React.FC = () => {
           borderRadius: 2,
           marginBottom: "1rem",
           background: "hsl(var(--background))",
-          boxShadow: "var(--shadow-neu-inset)",
+          boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
           overflow: "hidden",
         }}
       >
@@ -431,7 +431,7 @@ const UserManagement: React.FC = () => {
                       borderRadius: "50%",
                       flexShrink: 0,
                       background: "hsl(var(--background))",
-                      boxShadow: "var(--shadow-neu-outer)",
+                      boxShadow: "var(--glass-shadow)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -487,7 +487,7 @@ const UserManagement: React.FC = () => {
                   style={{
                     borderRadius: "var(--radius)",
                     padding: "0.875rem",
-                    boxShadow: "var(--shadow-neu-inset)",
+                    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
                     display: "flex",
                     flexDirection: "column",
                     gap: "0.6rem",
@@ -630,7 +630,7 @@ const UserManagement: React.FC = () => {
                     style={{
                       borderRadius: "var(--radius)",
                       padding: "0.75rem",
-                      boxShadow: "var(--shadow-neu-inset)",
+                      boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
                       fontSize: "0.78rem",
                       display: "flex",
                       flexDirection: "column",
@@ -787,8 +787,8 @@ const UserManagement: React.FC = () => {
                     : "hsl(var(--foreground))",
                 boxShadow:
                   p === page
-                    ? "var(--shadow-neu-inset)"
-                    : "var(--shadow-neu-outer)",
+                    ? "0 0 15px hsla(var(--primary), 0.1)"
+                    : "var(--glass-shadow)",
                 fontWeight: p === page ? 700 : 400,
                 fontFamily: "inherit",
                 opacity: fetching ? 0.6 : 1,
