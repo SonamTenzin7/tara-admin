@@ -122,7 +122,7 @@ const MarketDiscovery: React.FC = () => {
                 border: "1px solid hsl(var(--border))",
                 background: "hsl(var(--background))",
                 color: "hsl(var(--foreground))",
-                boxShadow: "var(--shadow-neu-inset)",
+                boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
                 outline: "none",
               }}
             />

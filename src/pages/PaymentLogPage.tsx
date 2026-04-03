@@ -96,7 +96,7 @@ const PaymentLogPage: React.FC = () => {
     color: "hsl(var(--foreground))",
     fontSize: "0.85rem",
     cursor: "pointer",
-    boxShadow: "var(--shadow-neu-inset)",
+    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
   }
 
   return (
@@ -346,10 +346,7 @@ const PaymentLogPage: React.FC = () => {
                           i < filtered.length - 1
                             ? "1px solid hsl(var(--border))"
                             : undefined,
-                        background:
-                          i % 2 === 1
-                            ? "hsla(var(--neu-dark) / 0.08)"
-                            : undefined,
+                        background: i % 2 === 1 ? "var(--glass-bg)" : undefined,
                       }}
                     >
                       <td
