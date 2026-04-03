@@ -1,8 +1,34 @@
 import React, { useState } from "react"
 
+interface Outcome {
+  label: string
+}
+
+interface MarketInitialData {
+  title?: string
+  description?: string
+  outcomes?: Outcome[]
+  opensAt?: string
+  closesAt?: string
+  houseEdgePct?: number
+  mechanism?: string
+  liquidityParam?: number
+}
+
+interface MarketFormData {
+  title: string
+  description: string
+  outcomes: string[]
+  opensAt: string
+  closesAt: string
+  houseEdgePct: number
+  mechanism: string
+  liquidityParam: number
+}
+
 interface MarketFormProps {
-  initialData?: any
-  onSubmit: (data: any) => void
+  initialData?: MarketInitialData
+  onSubmit: (data: MarketFormData) => void
   onCancel: () => void
   loading?: boolean
 }
@@ -16,7 +42,10 @@ const MarketForm: React.FC<MarketFormProps> = ({
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     description: initialData?.description || "",
-    outcomes: initialData?.outcomes?.map((o: any) => o.label) || ["Yes", "No"],
+    outcomes: initialData?.outcomes?.map((o: Outcome) => o.label) || [
+      "Yes",
+      "No",
+    ],
     opensAt: initialData?.opensAt
       ? new Date(initialData.opensAt).toISOString().slice(0, 16)
       : "",
@@ -28,7 +57,11 @@ const MarketForm: React.FC<MarketFormProps> = ({
     liquidityParam: initialData?.liquidityParam || 1000,
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -65,7 +98,16 @@ const MarketForm: React.FC<MarketFormProps> = ({
         <h3>{initialData ? "Edit Market" : "Create New Market"}</h3>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>TITLE</label>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            TITLE
+          </label>
           <input
             name="title"
             value={formData.title}
@@ -77,7 +119,16 @@ const MarketForm: React.FC<MarketFormProps> = ({
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>DESCRIPTION</label>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            DESCRIPTION
+          </label>
           <textarea
             name="description"
             value={formData.description}
@@ -89,9 +140,21 @@ const MarketForm: React.FC<MarketFormProps> = ({
         </div>
 
         <div style={{ marginBottom: "1rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>OUTCOMES</label>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            OUTCOMES
+          </label>
           {formData.outcomes.map((outcome: string, index: number) => (
-            <div key={index} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div
+              key={index}
+              style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}
+            >
               <input
                 value={outcome}
                 onChange={(e) => handleOutcomeChange(index, e.target.value)}
@@ -112,39 +175,77 @@ const MarketForm: React.FC<MarketFormProps> = ({
               )}
             </div>
           ))}
-          <button type="button" onClick={addOutcome} className="secondary" style={{ width: "100%", fontSize: "0.75rem" }}>
+          <button
+            type="button"
+            onClick={addOutcome}
+            className="secondary"
+            style={{ width: "100%", fontSize: "0.75rem" }}
+          >
             + Add Outcome
           </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-           <div>
-              <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>OPENS AT</label>
-              <input
-                type="datetime-local"
-                name="opensAt"
-                value={formData.opensAt}
-                onChange={handleChange}
-                className="input-field"
-                required
-              />
-           </div>
-           <div>
-              <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>CLOSES AT</label>
-              <input
-                type="datetime-local"
-                name="closesAt"
-                value={formData.closesAt}
-                onChange={handleChange}
-                className="input-field"
-                required
-              />
-           </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.75rem",
+                color: "hsl(var(--muted-foreground))",
+              }}
+            >
+              OPENS AT
+            </label>
+            <input
+              type="datetime-local"
+              name="opensAt"
+              value={formData.opensAt}
+              onChange={handleChange}
+              className="input-field"
+              required
+            />
+          </div>
+          <div>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.75rem",
+                color: "hsl(var(--muted-foreground))",
+              }}
+            >
+              CLOSES AT
+            </label>
+            <input
+              type="datetime-local"
+              name="closesAt"
+              value={formData.closesAt}
+              onChange={handleChange}
+              className="input-field"
+              required
+            />
+          </div>
         </div>
 
-
         <div style={{ marginBottom: "1.5rem" }}>
-          <label style={{ display: "block", marginBottom: "0.5rem", fontSize: "0.75rem", color: "hsl(var(--muted-foreground))" }}>PLATFORM FEE (%)</label>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            PLATFORM FEE (%)
+          </label>
           <input
             type="number"
             name="houseEdgePct"
@@ -157,12 +258,18 @@ const MarketForm: React.FC<MarketFormProps> = ({
           />
         </div>
 
-        <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+        <div
+          style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}
+        >
           <button type="button" className="secondary" onClick={onCancel}>
             Cancel
           </button>
           <button type="submit" disabled={loading}>
-            {loading ? "Saving..." : initialData ? "Update Market" : "Create Market"}
+            {loading
+              ? "Saving..."
+              : initialData
+                ? "Update Market"
+                : "Create Market"}
           </button>
         </div>
       </form>
