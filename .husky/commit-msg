@@ -1,0 +1,18 @@
+#!/bin/sh
+# Enforce Conventional Commits: type(scope?): description
+commit_msg=$(cat "$1")
+pattern='^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)(\(.+\))?: .{1,100}$'
+if ! echo "$commit_msg" | grep -Eq "$pattern"; then
+  echo ""
+  echo "✖ Invalid commit message format."
+  echo "  Must follow Conventional Commits:"
+  echo "  <type>(optional scope): <short description>"
+  echo ""
+  echo "  Types: feat | fix | chore | docs | style | refactor | perf | test | build | ci | revert"
+  echo "  Examples:"
+  echo "    feat(auth): add admin login flow"
+  echo "    fix: correct white background on searchbar"
+  echo "    chore: add husky pre-commit hooks"
+  echo ""
+  exit 1
+fi
