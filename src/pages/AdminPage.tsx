@@ -27,8 +27,8 @@ const AdminPage: React.FC = () => {
       localStorage.setItem("admin_token", token)
       setToken(token)
       setLoginError(null)
-    } catch (err: any) {
-      setLoginError(err.message)
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Login failed")
     }
   }
 
@@ -69,11 +69,23 @@ const AdminPage: React.FC = () => {
                 onChange={(e) => setSecret(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "8px 12px",
+                  padding: "10px 14px",
                   borderRadius: 8,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--card))",
+                  border: "none",
+                  background: "hsl(var(--background))",
                   color: "hsl(var(--foreground))",
+                  boxShadow: "var(--shadow-neu-inset)",
+                  outline: "none",
+                  fontSize: "0.875rem",
+                  fontFamily: "inherit",
+                  transition: "box-shadow 0.2s ease",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "var(--shadow-neu-inset), 0 0 0 2px hsla(180, 100%, 35%, 0.45)"
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow = "var(--shadow-neu-inset)"
                 }}
                 placeholder="Enter ADMIN_DEV_SECRET"
               />
@@ -91,15 +103,10 @@ const AdminPage: React.FC = () => {
             )}
             <button
               type="submit"
-              className="glass-card"
               style={{
                 width: "100%",
                 padding: "10px",
                 cursor: "pointer",
-                background: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-                border: "none",
-                fontWeight: "bold",
               }}
             >
               Initialize Connection
