@@ -26,7 +26,9 @@ const SettlementPage: React.FC = () => {
   const fetchSettlements = async () => {
     try {
       const res = await getSettlements()
-      setSettlements((res as Settlement[]) || [])
+      setSettlements(
+        ((res as Record<string, unknown>)?.data ?? res) as Settlement[]
+      )
       setFetchError(null)
     } catch (err: unknown) {
       setFetchError(err instanceof Error ? err.message : String(err))
