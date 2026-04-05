@@ -174,7 +174,12 @@ export function useAdminMarkets(token: string | null) {
     if (!token) return
     try {
       const res = await getMarkets()
-      setMarkets(res as Record<string, unknown>[])
+      setMarkets(
+        ((res as Record<string, unknown>)?.data ?? res) as Record<
+          string,
+          unknown
+        >[]
+      )
     } catch {
       // Error handled by useAdminApi state
     }
