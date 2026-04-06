@@ -5,7 +5,6 @@ import {
   Shield,
   ShieldOff,
   // Phone,
-  CreditCard,
   Flame,
   Search,
   X,
@@ -370,7 +369,7 @@ const UserManagement: React.FC = () => {
         }
       `}</style>
 
-      {/* ── Cards ────────────────────────────────────────────────────────────── */}
+      {/* ── Table ────────────────────────────────────────────────────────────── */}
       {initialLoad ? (
         <div
           style={{
@@ -394,400 +393,400 @@ const UserManagement: React.FC = () => {
         </div>
       ) : (
         <div
+          className="glass-card"
           style={{
             position: "relative",
             pointerEvents: fetching ? "none" : "auto",
+            padding: 0,
+            overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "1.25rem",
-            }}
-          >
-            {users.map((user: AdminUser) => (
-              <div
-                key={user.id}
-                className="glass-card"
-                style={{
-                  padding: "1.25rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "1rem",
-                }}
-              >
-                {/* ── Avatar + name row ── */}
-                <div
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                minWidth: "1000px",
+                fontSize: "0.85rem",
+              }}
+            >
+              <thead>
+                <tr
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.875rem",
+                    borderBottom: "1px solid hsla(var(--foreground), 0.1)",
+                    backgroundColor: "hsla(var(--background), 0.5)",
                   }}
                 >
-                  {/* Avatar — neumorphic circle */}
-                  <div
+                  <th
                     style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: "50%",
-                      flexShrink: 0,
-                      background: "hsl(var(--background))",
-                      boxShadow: "var(--glass-shadow)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "hsl(var(--primary))",
-                    }}
-                  >
-                    <User size={20} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        fontSize: "0.95rem",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {user.firstName || "Anonymous"}
-                      {user.lastName ? ` ${user.lastName}` : ""}
-                    </div>
-                    {user.username && (
-                      <div
-                        style={{
-                          fontSize: "0.78rem",
-                          color: "hsl(var(--primary))",
-                          fontWeight: 600,
-                        }}
-                      >
-                        @{user.username}
-                      </div>
-                    )}
-                    <div
-                      style={{
-                        fontSize: "0.68rem",
-                        color: "hsl(var(--muted-foreground))",
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      {user.id.slice(0, 12)}…
-                    </div>
-                  </div>
-                  {/* Role badge */}
-                  <span
-                    className={`badge ${user.isAdmin ? "badge-resolved" : "badge-upcoming"}`}
-                  >
-                    {user.isAdmin ? "ADMIN" : "USER"}
-                  </span>
-                </div>
-
-                {/* ── Inset detail panel ── */}
-                <div
-                  style={{
-                    borderRadius: "var(--radius)",
-                    padding: "0.875rem",
-                    boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.6rem",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {/* Telegram */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Telegram
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "monospace",
-                        color: user.telegramId
-                          ? "hsl(var(--foreground))"
-                          : "hsl(var(--muted-foreground))",
-                      }}
-                    >
-                      {user.telegramId ?? "—"}
-                    </span>
-                  </div>
-
-                  {/* Balance */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    {/* <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Balance
-                    </span> */}
-                    {/* <span
-                      style={{ fontWeight: 700, color: "hsl(var(--primary))" }}
-                    >
-                      NU.{" "}
-                      {parseFloat(String(user.balance ?? 0)).toLocaleString()}
-                    </span> */}
-                  </div>
-
-                  {/* Streak */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Streak
-                    </span>
-                    {user.telegramStreak ? (
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          fontWeight: 700,
-                        }}
-                      >
-                        <Flame size={13} color="hsl(var(--primary))" />{" "}
-                        {user.telegramStreak}
-                      </span>
-                    ) : (
-                      <span style={{ color: "hsl(var(--muted-foreground))" }}>
-                        —
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Reputation Tier */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Reputation
-                    </span>
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        textTransform: "capitalize",
-                        color:
-                          user.reputationTier === "expert"
-                            ? "hsl(var(--primary))"
-                            : user.reputationTier === "reliable"
-                              ? "#16a34a"
-                              : user.reputationTier === "regular"
-                                ? "#d97706"
-                                : "hsl(var(--muted-foreground))",
-                      }}
-                    >
-                      {user.reputationTier ?? "newcomer"}
-                    </span>
-                  </div>
-
-                  {/* Total Predictions */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Predictions
-                    </span>
-                    <span style={{ fontWeight: 600 }}>
-                      {user.totalPredictions ?? 0}
-                    </span>
-                  </div>
-
-                  {/* Phone */}
-                  {/* <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "hsl(var(--muted-foreground))",
-                        fontSize: "0.7rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                      }}
-                    >
-                      Phone
-                    </span>
-                    {user.phoneNumber ? (
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                        }}
-                      >
-                        <Phone size={12} color="hsl(var(--primary))" />{" "}
-                        {user.phoneNumber}
-                      </span>
-                    ) : (
-                      <span style={{ color: "hsl(var(--muted-foreground))" }}>
-                        —
-                      </span>
-                    )}
-                  </div> */}
-                </div>
-
-                {/* ── DK Bank panel (only if linked) ── */}
-                {user.dkCid && (
-                  <div
-                    style={{
-                      borderRadius: "var(--radius)",
-                      padding: "0.75rem",
-                      boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
-                      fontSize: "0.78rem",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.35rem",
-                      borderLeft: "2px solid hsl(var(--primary))",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        fontWeight: 600,
-                        color: "hsl(var(--primary))",
-                      }}
-                    >
-                      <CreditCard size={13} /> DK Bank Linked
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "monospace",
-                        color: "hsl(var(--foreground))",
-                      }}
-                    >
-                      {user.dkCid}
-                    </div>
-                    {user.dkAccountName && (
-                      <div style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {user.dkAccountName}
-                      </div>
-                    )}
-                    {user.dkAccountNumber && (
-                      <div
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: "0.72rem",
-                          color: "hsl(var(--muted-foreground))",
-                        }}
-                      >
-                        Acc: {user.dkAccountNumber}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ── Footer: dates + action ── */}
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingTop: "0.25rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "0.7rem",
+                      padding: "1rem",
+                      textAlign: "left",
+                      fontWeight: 600,
                       color: "hsl(var(--muted-foreground))",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    <div>
-                      Joined {new Date(user.createdAt).toLocaleDateString()}
-                    </div>
-                    {user.telegramLinkedAt && (
-                      <div>
-                        Linked{" "}
-                        {new Date(user.telegramLinkedAt).toLocaleDateString()}
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
-                    className="secondary"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 5,
+                      textTransform: "uppercase",
                       fontSize: "0.75rem",
-                      padding: "6px 12px",
+                      letterSpacing: "0.05em",
                     }}
-                    disabled={api.loading}
                   >
-                    {user.isAdmin ? (
-                      <>
-                        <ShieldOff size={13} /> Demote
-                      </>
-                    ) : (
-                      <>
-                        <Shield size={13} /> Promote
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            ))}
+                    User
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Role & Rep
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Telegram
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "center",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Predictions
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    DK Bank
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Joined
+                  </th>
+                  <th
+                    style={{
+                      padding: "1rem",
+                      textAlign: "right",
+                      fontWeight: 600,
+                      color: "hsl(var(--muted-foreground))",
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((user: AdminUser) => (
+                  <tr
+                    key={user.id}
+                    style={{
+                      borderBottom: "1px solid hsla(var(--foreground), 0.05)",
+                      transition: "background-color 0.2s ease",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        "hsla(var(--primary), 0.05)")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
+                  >
+                    {/* User */}
+                    <td style={{ padding: "1rem" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.875rem",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: "50%",
+                            flexShrink: 0,
+                            background: "hsla(var(--primary), 0.1)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "hsl(var(--primary))",
+                          }}
+                        >
+                          <User size={18} />
+                        </div>
+                        <div>
+                          <div
+                            style={{
+                              fontWeight: 700,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              maxWidth: 150,
+                            }}
+                          >
+                            {user.firstName || "Anonymous"}
+                            {user.lastName ? ` ${user.lastName}` : ""}
+                          </div>
+                          {user.username && (
+                            <div
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "hsl(var(--primary))",
+                                fontWeight: 600,
+                              }}
+                            >
+                              @{user.username}
+                            </div>
+                          )}
+                          <div
+                            style={{
+                              fontSize: "0.68rem",
+                              color: "hsl(var(--muted-foreground))",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            {user.id.slice(0, 12)}…
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Role & Rep */}
+                    <td style={{ padding: "1rem" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 6,
+                          alignItems: "flex-start",
+                        }}
+                      >
+                        <span
+                          className={`badge ${user.isAdmin ? "badge-resolved" : "badge-upcoming"}`}
+                        >
+                          {user.isAdmin ? "ADMIN" : "USER"}
+                        </span>
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "0.75rem",
+                            textTransform: "capitalize",
+                            color:
+                              user.reputationTier === "expert"
+                                ? "hsl(var(--primary))"
+                                : user.reputationTier === "reliable"
+                                  ? "#16a34a"
+                                  : user.reputationTier === "regular"
+                                    ? "#d97706"
+                                    : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          {user.reputationTier ?? "newcomer"}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Telegram */}
+                    <td style={{ padding: "1rem" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "monospace",
+                            color: user.telegramId
+                              ? "hsl(var(--foreground))"
+                              : "hsl(var(--muted-foreground))",
+                          }}
+                        >
+                          {user.telegramId ?? "—"}
+                        </span>
+                        {user.telegramStreak ? (
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontWeight: 700,
+                              fontSize: "0.75rem",
+                              color: "hsl(var(--primary))",
+                            }}
+                          >
+                            <Flame size={13} /> {user.telegramStreak}
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: "0.75rem",
+                              color: "hsl(var(--muted-foreground))",
+                            }}
+                          >
+                            —
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Predictions */}
+                    <td
+                      style={{
+                        padding: "1rem",
+                        textAlign: "center",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {user.totalPredictions ?? 0}
+                    </td>
+
+                    {/* DK Bank */}
+                    <td style={{ padding: "1rem" }}>
+                      {user.dkCid ? (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: "monospace",
+                              color: "hsl(var(--foreground))",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {user.dkCid}
+                          </span>
+                          {user.dkAccountName && (
+                            <span
+                              style={{ color: "hsl(var(--muted-foreground))" }}
+                            >
+                              {user.dkAccountName}
+                            </span>
+                          )}
+                          {user.dkAccountNumber && (
+                            <span
+                              style={{
+                                fontFamily: "monospace",
+                                color: "hsl(var(--muted-foreground))",
+                              }}
+                            >
+                              Acc: {user.dkAccountNumber}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span
+                          style={{
+                            color: "hsl(var(--muted-foreground))",
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          —
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Joined */}
+                    <td
+                      style={{
+                        padding: "1rem",
+                        color: "hsl(var(--muted-foreground))",
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 2,
+                        }}
+                      >
+                        <span>
+                          Joined:{" "}
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </span>
+                        {user.telegramLinkedAt && (
+                          <span>
+                            Linked:{" "}
+                            {new Date(
+                              user.telegramLinkedAt
+                            ).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td style={{ padding: "1rem", textAlign: "right" }}>
+                      <button
+                        onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
+                        className="secondary"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontSize: "0.75rem",
+                          padding: "6px 12px",
+                        }}
+                        disabled={api.loading}
+                      >
+                        {user.isAdmin ? (
+                          <>
+                            <ShieldOff size={13} /> Demote
+                          </>
+                        ) : (
+                          <>
+                            <Shield size={13} /> Promote
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
