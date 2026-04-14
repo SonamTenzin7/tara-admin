@@ -8,10 +8,18 @@ interface MarketOutcome {
 
 interface ProposeMarketModalProps {
   market: { id: string; title: string; outcomes: MarketOutcome[] }
-  onPropose: (proposedOutcomeId: string) => void
+  onPropose: (proposedOutcomeId: string, windowMinutes: number) => void
   onCancel: () => void
   loading?: boolean
 }
+
+const WINDOW_OPTIONS = [
+  { minutes: 10, label: "10 min", sub: "urgent" },
+  { minutes: 20, label: "20 min", sub: "" },
+  { minutes: 30, label: "30 min", sub: "recommended" },
+  { minutes: 60, label: "1 hour", sub: "" },
+  { minutes: 120, label: "2 hours", sub: "complex markets" },
+]
 
 const ProposeMarketModal: React.FC<ProposeMarketModalProps> = ({
   market,
@@ -20,6 +28,7 @@ const ProposeMarketModal: React.FC<ProposeMarketModalProps> = ({
   loading,
 }) => {
   const [selectedOutcomeId, setSelectedOutcomeId] = useState<string>("")
+  const [windowMinutes, setWindowMinutes] = useState<number>(30)
 
   return (
     <div
@@ -63,9 +72,79 @@ const ProposeMarketModal: React.FC<ProposeMarketModalProps> = ({
             marginBottom: "1.5rem",
           }}
         >
-          This opens a 24-hour dispute window. Bettors can stake bonds to flag
-          disagreement. You make the final resolution call after reviewing
-          disputes.
+          This opens a short objection window. Users with active positions can
+          object for <strong>free</strong> (no bond required). You must supply
+          evidence when you submit the final resolution — it will be published
+          publicly.
+        </div>
+
+        {/* Window selector */}
+        <div style={{ marginBottom: "1.5rem" }}>
+          <div
+            style={{
+              fontSize: "0.8rem",
+              fontWeight: 600,
+              marginBottom: "0.5rem",
+              color: "hsl(var(--foreground))",
+            }}
+          >
+            Objection Window
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {WINDOW_OPTIONS.map((opt) => (
+              <label
+                key={opt.minutes}
+                style={{
+                  flex: "1 1 60px",
+                  padding: "0.55rem 0.5rem",
+                  borderRadius: "var(--radius)",
+                  background:
+                    windowMinutes === opt.minutes
+                      ? "hsl(var(--primary) / 0.12)"
+                      : "hsl(var(--muted) / 0.2)",
+                  border: `1px solid ${windowMinutes === opt.minutes ? "hsl(var(--primary))" : "transparent"}`,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.15rem",
+                  textAlign: "center",
+                }}
+              >
+                <input
+                  type="radio"
+                  name="window"
+                  value={opt.minutes}
+                  checked={windowMinutes === opt.minutes}
+                  onChange={() => setWindowMinutes(opt.minutes)}
+                  style={{ display: "none" }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.85rem",
+                    fontWeight: windowMinutes === opt.minutes ? 700 : 500,
+                    color:
+                      windowMinutes === opt.minutes
+                        ? "hsl(var(--primary))"
+                        : "hsl(var(--foreground))",
+                  }}
+                >
+                  {opt.label}
+                </span>
+                {opt.sub && (
+                  <span
+                    style={{
+                      fontSize: "0.65rem",
+                      color: "hsl(var(--muted-foreground))",
+                      opacity: 0.8,
+                    }}
+                  >
+                    {opt.sub}
+                  </span>
+                )}
+              </label>
+            ))}
+          </div>
         </div>
 
         <div
@@ -142,10 +221,12 @@ const ProposeMarketModal: React.FC<ProposeMarketModalProps> = ({
             Cancel
           </button>
           <button
-            onClick={() => onPropose(selectedOutcomeId)}
+            onClick={() => onPropose(selectedOutcomeId, windowMinutes)}
             disabled={!selectedOutcomeId || loading}
           >
-            {loading ? "Opening window…" : "Propose & Open Dispute Window"}
+            {loading
+              ? "Opening window…"
+              : `Propose & Open ${WINDOW_OPTIONS.find((o) => o.minutes === windowMinutes)?.label ?? windowMinutes + "min"} Window`}
           </button>
         </div>
       </div>

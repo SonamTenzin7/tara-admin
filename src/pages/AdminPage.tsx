@@ -9,6 +9,7 @@ const KeeperDashboard = lazy(() => import("./KeeperDashboard"))
 const SettlementPage = lazy(() => import("./SettlementPage"))
 const PaymentLogPage = lazy(() => import("./PaymentLogPage"))
 const AuditLogPage = lazy(() => import("./AuditLogPage"))
+const ResolutionLogPage = lazy(() => import("./ResolutionLogPage"))
 import { useAdminApi } from "../lib/useAdminApi"
 
 const AdminPage: React.FC = () => {
@@ -138,6 +139,7 @@ const AdminPage: React.FC = () => {
   else if (page === "settlements") content = <SettlementPage />
   else if (page === "payments") content = <PaymentLogPage />
   else if (page === "audit") content = <AuditLogPage />
+  else if (page === "resolution-log") content = <ResolutionLogPage />
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>

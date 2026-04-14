@@ -75,20 +75,34 @@ export function useAdminApi(token: string | null) {
           method: "PATCH",
           body: JSON.stringify({ status }),
         }),
-      proposeMarket: (id: string, proposedOutcomeId: string) =>
+      proposeMarket: (
+        id: string,
+        proposedOutcomeId: string,
+        windowMinutes?: number
+      ) =>
         apiFetch(`/admin/markets/${id}/propose`, {
           method: "POST",
-          body: JSON.stringify({ proposedOutcomeId }),
+          body: JSON.stringify({
+            proposedOutcomeId,
+            windowMinutes: windowMinutes ?? 60,
+          }),
         }),
-      resolveMarket: (id: string, winningOutcomeId: string) =>
+      resolveMarket: (
+        id: string,
+        winningOutcomeId: string,
+        evidenceUrl: string,
+        evidenceNote: string
+      ) =>
         apiFetch(`/admin/markets/${id}/resolve`, {
           method: "POST",
-          body: JSON.stringify({ winningOutcomeId }),
+          body: JSON.stringify({ winningOutcomeId, evidenceUrl, evidenceNote }),
         }),
       cancelMarket: (id: string) =>
         apiFetch(`/admin/markets/${id}/cancel`, { method: "POST" }),
       getMarketDisputes: (id: string) =>
         apiFetch(`/admin/markets/${id}/disputes`),
+      getResolutionLog: () =>
+        fetch(`${API_BASE}/markets/resolution-log`).then((r) => r.json()),
       getPool: (id: string) => apiFetch(`/admin/markets/${id}/pool`),
       getSettlements: () => apiFetch("/admin/settlements"),
       getPayments: () => apiFetch("/admin/payments"),

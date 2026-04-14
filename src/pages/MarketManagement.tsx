@@ -143,14 +143,25 @@ const MarketManagement: React.FC = () => {
     }
   }
 
-  const handlePropose = async (proposedOutcomeId: string) => {
+  const handlePropose = async (
+    proposedOutcomeId: string,
+    windowMinutes: number
+  ) => {
     if (!proposingMarket) return
     try {
-      await api.proposeMarket(proposingMarket.id, proposedOutcomeId)
+      await api.proposeMarket(
+        proposingMarket.id,
+        proposedOutcomeId,
+        windowMinutes
+      )
       refresh()
       setProposingMarket(null)
+      const windowLabel =
+        windowMinutes >= 60
+          ? `${windowMinutes / 60} hour${windowMinutes > 60 ? "s" : ""}`
+          : `${windowMinutes} minutes`
       alert(
-        `Dispute window opened for "${proposingMarket.title}". Bettors have 24 hours to dispute.`
+        `Objection window opened for "${proposingMarket.title}". Bettors have ${windowLabel} to object. Evidence must be submitted when you resolve.`
       )
     } catch (e: unknown) {
       alert(
@@ -169,15 +180,24 @@ const MarketManagement: React.FC = () => {
     }
   }
 
-  const handleResolve = async (winningOutcomeId: string) => {
+  const handleResolve = async (
+    winningOutcomeId: string,
+    evidenceUrl: string,
+    evidenceNote: string
+  ) => {
     if (!resolvingMarket) return
     try {
-      await api.resolveMarket(resolvingMarket.id, winningOutcomeId)
+      await api.resolveMarket(
+        resolvingMarket.id,
+        winningOutcomeId,
+        evidenceUrl,
+        evidenceNote
+      )
       refresh()
       setResolvingMarket(null)
       setResolvingDisputes([])
       alert(
-        `Market "${resolvingMarket.title}" has been resolved successfully! Check the Settlements page for details.`
+        `Market "${resolvingMarket.title}" has been settled. Evidence published on the Resolution Log.`
       )
     } catch (e: unknown) {
       alert(
