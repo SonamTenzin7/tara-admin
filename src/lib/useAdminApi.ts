@@ -9,6 +9,20 @@ const API_BASE =
   ) + // strip trailing /admin added by env
   "/api" // add the NestJS global prefix
 
+// ── Standalone login — does NOT require a token ───────────────────────────────
+export async function loginWithDevSecret(
+  secret: string
+): Promise<{ token: string }> {
+  const response = await fetch(
+    `${API_BASE}/auth/dev/admin-token?secret=${encodeURIComponent(secret)}`
+  )
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body?.message || "Invalid Secret")
+  }
+  return response.json()
+}
+
 export function useAdminApi(token: string | null) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -156,18 +170,12 @@ export function useAdminApi(token: string | null) {
         apiFetch(`/admin/audit-logs/admin/${adminId}`),
       getAuditLogsByEntity: (entityId: string) =>
         apiFetch(`/admin/audit-logs/entity/${entityId}`),
+      getHealthCheck: () => apiFetch("/admin/health"),
       toggleAdmin: (userId: string, isAdmin: boolean) =>
         apiFetch(`/admin/users/${userId}/admin`, {
           method: "PATCH",
           body: JSON.stringify({ isAdmin }),
         }),
-      loginWithDevSecret: async (secret: string) => {
-        const response = await fetch(
-          `${API_BASE}/auth/dev/admin-token?secret=${secret}`
-        )
-        if (!response.ok) throw new Error("Invalid Secret")
-        return response.json()
-      },
       // ── Tournaments ──────────────────────────────────────────────────────
       getTournaments: () => apiFetch("/admin/tournaments"),
       createTournament: (data: Record<string, unknown>) =>

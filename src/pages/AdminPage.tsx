@@ -10,7 +10,7 @@ const SettlementPage = lazy(() => import("./SettlementPage"))
 const PaymentLogPage = lazy(() => import("./PaymentLogPage"))
 const AuditLogPage = lazy(() => import("./AuditLogPage"))
 const ResolutionLogPage = lazy(() => import("./ResolutionLogPage"))
-import { useAdminApi } from "../lib/useAdminApi"
+import { loginWithDevSecret } from "../lib/useAdminApi"
 
 const AdminPage: React.FC = () => {
   const [page, setPage] = useState("dashboard")
@@ -19,7 +19,6 @@ const AdminPage: React.FC = () => {
   )
   const [secret, setSecret] = useState("")
   const [loginError, setLoginError] = useState<string | null>(null)
-  const { loginWithDevSecret } = useAdminApi(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()

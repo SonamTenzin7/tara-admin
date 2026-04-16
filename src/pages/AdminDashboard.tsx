@@ -1,6 +1,7 @@
 import React, { useMemo } from "react"
 import { useAdminMarkets } from "../lib/useAdminApi"
 import { TrendingUp, Activity, AlertCircle } from "lucide-react"
+import HealthCheck from "../components/HealthCheck"
 
 const AdminDashboard: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
@@ -85,6 +86,8 @@ const AdminDashboard: React.FC = () => {
           <p>{stats.unsettledMarkets}</p>
         </div>
       </div>
+
+      <HealthCheck />
 
       <div className="glass-card" style={{ marginTop: "2rem" }}>
         <h3>Behavioral Analysis</h3>

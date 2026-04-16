@@ -88,7 +88,10 @@ const MarketManagement: React.FC = () => {
     try {
       await api.createMarket({
         ...(data as unknown as Record<string, unknown>),
-        outcomes: data.outcomes.map((o) => o.label),
+        outcomes: data.outcomes.map((o) => ({
+          label: o.label,
+          imageUrl: o.imageUrl ?? null,
+        })),
       })
       refresh()
       setView("list")
