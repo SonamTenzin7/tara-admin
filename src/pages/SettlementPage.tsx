@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import { useAdminApi } from "../lib/useAdminApi"
 import { CheckCircle, AlertCircle, RefreshCw, Eye } from "lucide-react"
 import { SettlementDetails } from "../components/SettlementDetails"
@@ -15,30 +15,48 @@ interface Settlement {
   settledAt?: string
 }
 
+const PAGE_SIZE = 20
+
 const SettlementPage: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
   const { getSettlements, loading, error } = useAdminApi(token)
   const [settlements, setSettlements] = useState<Settlement[]>([])
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [pages, setPages] = useState(1)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedSettlement, setSelectedSettlement] =
     useState<Settlement | null>(null)
 
-  const fetchSettlements = async () => {
-    try {
-      const res = await getSettlements()
-      setSettlements(
-        ((res as Record<string, unknown>)?.data ?? res) as Settlement[]
-      )
-      setFetchError(null)
-    } catch (err: unknown) {
-      setFetchError(err instanceof Error ? err.message : String(err))
-    }
-  }
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const getSettlementsRef = useRef(getSettlements)
+  useEffect(() => {
+    getSettlementsRef.current = getSettlements
+  })
 
   useEffect(() => {
-    void fetchSettlements()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token])
+    let cancelled = false
+    getSettlementsRef
+      .current({ page, limit: PAGE_SIZE })
+      .then((res) => {
+        if (cancelled) return
+        const r = res as { data: Settlement[]; total: number; pages: number }
+        setSettlements(r.data ?? [])
+        setTotal(r.total ?? 0)
+        setPages(r.pages ?? 1)
+        setFetchError(null)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled)
+          setFetchError(err instanceof Error ? err.message : String(err))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [page, token, refreshKey])
+
+  const fetchSettlements = () => setRefreshKey((k) => k + 1)
 
   return (
     <div className="settlement-page">
@@ -305,6 +323,46 @@ const SettlementPage: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {pages > 1 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "1rem",
+            padding: "0.75rem 0",
+            color: "hsl(var(--muted-foreground))",
+            fontSize: "0.875rem",
+          }}
+        >
+          <span>
+            Showing {(page - 1) * PAGE_SIZE + 1}–
+            {Math.min(page * PAGE_SIZE, total)} of {total} settlements
+          </span>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              className="secondary"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1 || loading}
+              style={{ opacity: page <= 1 || loading ? 0.5 : 1 }}
+            >
+              Previous
+            </button>
+            <span style={{ padding: "0.5rem 0.75rem", alignSelf: "center" }}>
+              {page} / {pages}
+            </span>
+            <button
+              className="secondary"
+              onClick={() => setPage((p) => Math.min(pages, p + 1))}
+              disabled={page >= pages || loading}
+              style={{ opacity: page >= pages || loading ? 0.5 : 1 }}
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

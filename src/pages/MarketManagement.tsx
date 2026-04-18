@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { useAdminMarkets, useAdminApi } from "../lib/useAdminApi"
+import React, { useState, useEffect, useRef } from "react"
+import { useAdminApi } from "../lib/useAdminApi"
 import { useRealTimeUpdates } from "../hooks/useRealTimeUpdates"
 import MarketForm, { type MarketFormData } from "../components/MarketForm"
 import ResolveMarketModal from "../components/ResolveMarketModal"
@@ -45,11 +45,17 @@ interface Dispute {
   [key: string]: unknown
 }
 
+const PAGE_SIZE = 20
+
 const MarketManagement: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
-  const { markets: rawMarkets, loading, refresh } = useAdminMarkets(token)
-  const markets = rawMarkets as unknown as Market[]
   const api = useAdminApi(token)
+
+  const [markets, setMarkets] = useState<Market[]>([])
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [pages, setPages] = useState(1)
+  const [fetching, setFetching] = useState(false)
 
   const [view, setView] = useState<"list" | "create" | "edit">("list")
   const [editingMarket, setEditingMarket] = useState<Market | null>(null)
@@ -60,13 +66,44 @@ const MarketManagement: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>("All")
   const [expandedMarket, setExpandedMarket] = useState<string | null>(null)
 
-  // Real-time updates
-  const {
-    markets: realtimeMarkets,
-    lastUpdate,
-    connectionStatus,
-  } = useRealTimeUpdates(markets)
-  const displayMarkets = realtimeMarkets.length > 0 ? realtimeMarkets : markets
+  const getMarketsRef = useRef(api.getMarkets)
+  useEffect(() => {
+    getMarketsRef.current = api.getMarkets
+  })
+
+  const fetchMarkets = useRef((p: number, status: string) => {
+    let cancelled = false
+    setFetching(true)
+    getMarketsRef
+      .current({ page: p, limit: PAGE_SIZE, status })
+      .then((res) => {
+        if (cancelled) return
+        const r = res as {
+          data: Market[]
+          total: number
+          page: number
+          pages: number
+        }
+        setMarkets(r.data ?? [])
+        setTotal(r.total ?? 0)
+        setPages(r.pages ?? 1)
+      })
+      .catch(() => {
+        if (!cancelled) setMarkets([])
+      })
+      .finally(() => {
+        if (!cancelled) setFetching(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  })
+
+  useEffect(() => {
+    return fetchMarkets.current(page, filterStatus)
+  }, [page, filterStatus])
+
+  const refresh = () => fetchMarkets.current(page, filterStatus)
 
   const statuses = [
     "All",
@@ -79,10 +116,13 @@ const MarketManagement: React.FC = () => {
     "Cancelled",
   ]
 
-  const filteredMarkets = displayMarkets.filter(
-    (m: Market) =>
-      filterStatus === "All" || m.status === filterStatus.toLowerCase()
-  )
+  // Real-time updates overlay on current page
+  const {
+    markets: realtimeMarkets,
+    lastUpdate,
+    connectionStatus,
+  } = useRealTimeUpdates(markets)
+  const displayMarkets = realtimeMarkets.length > 0 ? realtimeMarkets : markets
 
   const handleCreate = async (data: MarketFormData) => {
     try {
@@ -93,6 +133,7 @@ const MarketManagement: React.FC = () => {
           imageUrl: o.imageUrl ?? null,
         })),
       })
+      setPage(1)
       refresh()
       setView("list")
     } catch (e: unknown) {
@@ -272,7 +313,7 @@ const MarketManagement: React.FC = () => {
                 color: "hsl(var(--muted-foreground))",
               }}
             >
-              {filteredMarkets.length} markets
+              {total} markets
             </span>
             <div
               style={{
@@ -338,7 +379,10 @@ const MarketManagement: React.FC = () => {
           {statuses.map((status) => (
             <button
               key={status}
-              onClick={() => setFilterStatus(status)}
+              onClick={() => {
+                setFilterStatus(status)
+                setPage(1)
+              }}
               className={filterStatus === status ? "" : "secondary"}
               style={{
                 fontSize: "0.75rem",
@@ -351,7 +395,7 @@ const MarketManagement: React.FC = () => {
           ))}
         </div>
 
-        {loading ? (
+        {fetching ? (
           <div
             style={{
               padding: "3rem",
@@ -373,7 +417,7 @@ const MarketManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredMarkets.length === 0 ? (
+              {displayMarkets.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -387,7 +431,7 @@ const MarketManagement: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredMarkets.map((m: Market) => (
+                displayMarkets.map((m: Market) => (
                   <React.Fragment key={m.id}>
                     <tr>
                       <td>
@@ -561,6 +605,86 @@ const MarketManagement: React.FC = () => {
           </table>
         )}
       </div>
+
+      {total > PAGE_SIZE && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            marginTop: "1.5rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <button
+            className="secondary"
+            style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+            onClick={() => setPage(1)}
+            disabled={page === 1 || fetching}
+          >
+            «
+          </button>
+          <button
+            className="secondary"
+            style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1 || fetching}
+          >
+            ‹ Prev
+          </button>
+          {Array.from({ length: Math.min(pages, 7) }, (_, i) => {
+            const start = Math.max(1, Math.min(page - 3, pages - 6))
+            return start + i
+          }).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              disabled={fetching}
+              style={{
+                padding: "6px 12px",
+                fontSize: "0.8rem",
+                borderRadius: 8,
+                border: "none",
+                background:
+                  p === page ? "hsl(var(--primary))" : "hsl(var(--background))",
+                color:
+                  p === page
+                    ? "hsl(var(--primary-foreground))"
+                    : "hsl(var(--foreground))",
+                fontWeight: p === page ? 700 : 400,
+                cursor: "pointer",
+              }}
+            >
+              {p}
+            </button>
+          ))}
+          <button
+            className="secondary"
+            style={{ padding: "6px 14px", fontSize: "0.8rem" }}
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages || fetching}
+          >
+            Next ›
+          </button>
+          <button
+            className="secondary"
+            style={{ padding: "6px 12px", fontSize: "0.8rem" }}
+            onClick={() => setPage(pages)}
+            disabled={page === pages || fetching}
+          >
+            »
+          </button>
+          <span
+            style={{
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            Page {page} / {pages} · {total} markets
+          </span>
+        </div>
+      )}
 
       {proposingMarket && (
         <ProposeMarketModal

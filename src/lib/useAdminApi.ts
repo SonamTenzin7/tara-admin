@@ -71,7 +71,19 @@ export function useAdminApi(token: string | null) {
 
   const api = useMemo(
     () => ({
-      getMarkets: () => apiFetch("/admin/markets"),
+      getMarkets: (params?: {
+        page?: number
+        limit?: number
+        status?: string
+      }) => {
+        const qs = new URLSearchParams()
+        if (params?.page) qs.set("page", String(params.page))
+        if (params?.limit) qs.set("limit", String(params.limit))
+        if (params?.status && params.status !== "All")
+          qs.set("status", params.status)
+        const suffix = qs.toString() ? `?${qs.toString()}` : ""
+        return apiFetch(`/admin/markets${suffix}`)
+      },
       createMarket: (data: Record<string, unknown>) =>
         apiFetch("/admin/markets", {
           method: "POST",
@@ -118,7 +130,13 @@ export function useAdminApi(token: string | null) {
       getResolutionLog: () =>
         fetch(`${API_BASE}/markets/resolution-log`).then((r) => r.json()),
       getPool: (id: string) => apiFetch(`/admin/markets/${id}/pool`),
-      getSettlements: () => apiFetch("/admin/settlements"),
+      getSettlements: (params?: { page?: number; limit?: number }) => {
+        const qs = new URLSearchParams()
+        if (params?.page) qs.set("page", String(params.page))
+        if (params?.limit) qs.set("limit", String(params.limit))
+        const suffix = qs.toString() ? `?${qs.toString()}` : ""
+        return apiFetch(`/admin/settlements${suffix}`)
+      },
       getPayments: () => apiFetch("/admin/payments"),
       getUsers: (params?: {
         search?: string
