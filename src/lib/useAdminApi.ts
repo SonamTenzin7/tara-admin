@@ -11,10 +11,13 @@ const API_BASE =
 
 // ── Standalone login — does NOT require a token ───────────────────────────────
 export async function loginWithDevSecret(
-  secret: string
+  secret: string,
+  totp?: string
 ): Promise<{ token: string }> {
+  const params = new URLSearchParams({ secret })
+  if (totp) params.set("totp", totp)
   const response = await fetch(
-    `${API_BASE}/auth/dev/admin-token?secret=${encodeURIComponent(secret)}`
+    `${API_BASE}/auth/dev/admin-token?${params.toString()}`
   )
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))

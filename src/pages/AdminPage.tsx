@@ -18,12 +18,13 @@ const AdminPage: React.FC = () => {
     sessionStorage.getItem("admin_token")
   )
   const [secret, setSecret] = useState("")
+  const [totp, setTotp] = useState("")
   const [loginError, setLoginError] = useState<string | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const { token } = await loginWithDevSecret(secret)
+      const { token } = await loginWithDevSecret(secret, totp || undefined)
       sessionStorage.setItem("admin_token", token)
       setToken(token)
       setLoginError(null)
@@ -89,6 +90,56 @@ const AdminPage: React.FC = () => {
                     "0 0 15px hsla(var(--primary), 0.1)"
                 }}
                 placeholder="Enter ADMIN_DEV_SECRET"
+              />
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 8,
+                  fontSize: "0.875rem",
+                }}
+              >
+                Authenticator Code{" "}
+                <span
+                  style={{
+                    color: "hsl(var(--muted-foreground))",
+                    fontWeight: 400,
+                  }}
+                >
+                  (if 2FA enabled)
+                </span>
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={totp}
+                onChange={(e) => setTotp(e.target.value.replace(/\D/g, ""))}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "hsl(var(--background))",
+                  color: "hsl(var(--foreground))",
+                  boxShadow: "0 0 15px hsla(var(--primary), 0.1)",
+                  outline: "none",
+                  fontSize: "1.1rem",
+                  fontFamily: "monospace",
+                  letterSpacing: "0.3em",
+                  transition: "box-shadow 0.2s ease",
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "var(--shadow-neu-inset), 0 0 0 2px hsla(180, 100%, 35%, 0.45)"
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.boxShadow =
+                    "0 0 15px hsla(var(--primary), 0.1)"
+                }}
+                placeholder="000000"
               />
             </div>
             {loginError && (
