@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Search, Globe, Plus, Zap, Calendar, MapPin, Clock } from "lucide-react"
 import { fifaService, type FifaMarket } from "../services/fifaService"
 import MarketForm, { type MarketFormData } from "../components/MarketForm"
+import { useToast } from "../components/Toast"
 
 interface ImportResult {
   success: boolean
@@ -9,6 +10,7 @@ interface ImportResult {
 }
 
 const MarketDiscovery: React.FC = () => {
+  const { notify, ToastContainer } = useToast()
   const [query, setQuery] = useState("")
   const [loading, setLoading] = useState(false)
   const [markets, setMarkets] = useState<FifaMarket[]>([])
@@ -107,11 +109,11 @@ const MarketDiscovery: React.FC = () => {
           message: `Imported "${data.title}"`,
         })
       )
-      alert(`✅ Successfully imported "${result.title}"`)
+      notify("success", `Successfully imported "${result.title}"`)
       setReviewingMarket(null)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      alert(`❌ Import failed: ${msg}`)
+      notify("error", `Import failed: ${msg}`)
     } finally {
       setImporting((prev) => {
         const newSet = new Set(prev)
@@ -123,6 +125,7 @@ const MarketDiscovery: React.FC = () => {
 
   return (
     <div className="market-discovery">
+      {ToastContainer}
       {/* ── Review & Import form ──────────────────────────────────────────── */}
       {reviewingMarket && (
         <div>

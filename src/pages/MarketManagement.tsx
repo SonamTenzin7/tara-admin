@@ -7,6 +7,7 @@ import ProposeMarketModal from "../components/ProposeMarketModal"
 import CancelMarketModal from "../components/CancelMarketModal"
 import { OddsDisplay } from "../components/OddsDisplay"
 import { LateMoneyMonitor } from "../components/LateMoneyMonitor"
+import { useToast } from "../components/Toast"
 import {
   Plus,
   Play,
@@ -50,6 +51,7 @@ const PAGE_SIZE = 20
 const MarketManagement: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
   const api = useAdminApi(token)
+  const { notify, ToastContainer } = useToast()
 
   const [markets, setMarkets] = useState<Market[]>([])
   const [page, setPage] = useState(1)
@@ -136,8 +138,10 @@ const MarketManagement: React.FC = () => {
       setPage(1)
       refresh()
       setView("list")
+      notify("success", "Market created successfully.")
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error creating market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -157,8 +161,10 @@ const MarketManagement: React.FC = () => {
       await refresh()
       setView("list")
       setEditingMarket(null)
+      notify("success", "Market updated successfully.")
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error updating market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -169,8 +175,10 @@ const MarketManagement: React.FC = () => {
     try {
       await api.deleteMarket(id)
       refresh()
+      notify("success", "Market deleted.")
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error deleting market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -180,8 +188,10 @@ const MarketManagement: React.FC = () => {
     try {
       await api.transitionMarket(id, status)
       refresh()
+      notify("success", `Market moved to ${status}.`)
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error transitioning market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -204,11 +214,13 @@ const MarketManagement: React.FC = () => {
         windowMinutes >= 60
           ? `${windowMinutes / 60} hour${windowMinutes > 60 ? "s" : ""}`
           : `${windowMinutes} minutes`
-      alert(
-        `Objection window opened for "${proposingMarket.title}". Bettors have ${windowLabel} to object. Evidence must be submitted when you resolve.`
+      notify(
+        "success",
+        `Objection window opened for "${proposingMarket.title}". Bettors have ${windowLabel} to object.`
       )
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error proposing outcome: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -240,11 +252,13 @@ const MarketManagement: React.FC = () => {
       refresh()
       setResolvingMarket(null)
       setResolvingDisputes([])
-      alert(
+      notify(
+        "success",
         `Market "${resolvingMarket.title}" has been settled. Evidence published on the Resolution Log.`
       )
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error resolving market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -256,11 +270,13 @@ const MarketManagement: React.FC = () => {
       await api.cancelMarket(cancellingMarket.id)
       refresh()
       setCancellingMarket(null)
-      alert(
+      notify(
+        "success",
         `Market "${cancellingMarket.title}" has been cancelled. All pending bets have been refunded.`
       )
     } catch (e: unknown) {
-      alert(
+      notify(
+        "error",
         `Error cancelling market: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -268,27 +284,34 @@ const MarketManagement: React.FC = () => {
 
   if (view === "create") {
     return (
-      <MarketForm
-        onSubmit={handleCreate}
-        onCancel={() => setView("list")}
-        loading={api.loading}
-      />
+      <>
+        {ToastContainer}
+        <MarketForm
+          onSubmit={handleCreate}
+          onCancel={() => setView("list")}
+          loading={api.loading}
+        />
+      </>
     )
   }
 
   if (view === "edit") {
     return (
-      <MarketForm
-        initialData={editingMarket ?? undefined}
-        onSubmit={handleUpdate}
-        onCancel={() => setView("list")}
-        loading={api.loading}
-      />
+      <>
+        {ToastContainer}
+        <MarketForm
+          initialData={editingMarket ?? undefined}
+          onSubmit={handleUpdate}
+          onCancel={() => setView("list")}
+          loading={api.loading}
+        />
+      </>
     )
   }
 
   return (
     <div className="market-management">
+      {ToastContainer}
       <div
         style={{
           marginBottom: "2rem",

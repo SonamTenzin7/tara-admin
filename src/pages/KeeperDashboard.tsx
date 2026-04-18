@@ -11,6 +11,7 @@ import {
   Clock,
   BarChart2,
 } from "lucide-react"
+import { useToast } from "../components/Toast"
 
 // ── API base (mirrors useAdminApi.ts logic) ────────────────────────────────
 const API_BASE =
@@ -48,6 +49,7 @@ const LOG_COLOR: Record<string, string> = {
 
 const KeeperDashboard: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
+  const { notify, ToastContainer } = useToast()
 
   const [status, setStatus] = useState<KeeperStatusResponse | null>(null)
   const [loadingToggle, setLoadingToggle] = useState(false)
@@ -119,7 +121,10 @@ const KeeperDashboard: React.FC = () => {
       // Short delay then refresh to see the new log entries
       setTimeout(fetchStatus, 1200)
     } catch (e: unknown) {
-      alert(`Trigger failed: ${e instanceof Error ? e.message : String(e)}`)
+      notify(
+        "error",
+        `Trigger failed: ${e instanceof Error ? e.message : String(e)}`
+      )
     } finally {
       setTriggering(null)
     }
@@ -138,6 +143,7 @@ const KeeperDashboard: React.FC = () => {
 
   return (
     <div className="keeper-dashboard">
+      {ToastContainer}
       {/* ── Header ───────────────────────────────────────────────────────── */}
       <div
         style={{

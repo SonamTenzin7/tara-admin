@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react"
 import { useAdminApi } from "../lib/useAdminApi"
+import { useToast } from "../components/Toast"
 import {
   User,
   Shield,
@@ -39,6 +40,7 @@ const PAGE_SIZE = 20
 const UserManagement: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
   const api = useAdminApi(token)
+  const { notify, ToastContainer } = useToast()
 
   const [users, setUsers] = useState<AdminUser[]>([])
   const [initialLoad, setInitialLoad] = useState(true)
@@ -168,7 +170,8 @@ const UserManagement: React.FC = () => {
       await api.toggleAdmin(userId, !currentStatus)
       forceRefresh()
     } catch (e) {
-      alert(
+      notify(
+        "error",
         `Error toggling admin status: ${e instanceof Error ? e.message : String(e)}`
       )
     }
@@ -191,6 +194,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div>
+      {ToastContainer}
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div
         style={{
