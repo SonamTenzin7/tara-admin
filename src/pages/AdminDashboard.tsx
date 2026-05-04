@@ -13,11 +13,13 @@ const AdminDashboard: React.FC = () => {
     const activeMarkets = markets.filter(
       (m: Record<string, unknown>) => m.status === "open"
     ).length
-    const totalPoolVolume = markets.reduce(
-      (sum: number, m: Record<string, unknown>) =>
-        sum + (parseFloat(String(m.totalPool)) || 0),
-      0
-    )
+    const totalPoolVolume = markets
+      .filter((m: Record<string, unknown>) => m.status === "open")
+      .reduce(
+        (sum: number, m: Record<string, unknown>) =>
+          sum + (parseFloat(String(m.totalPool)) || 0),
+        0
+      )
     const unsettledMarkets = markets.filter((m: Record<string, unknown>) =>
       ["closed", "resolving", "resolved"].includes(String(m.status))
     ).length
