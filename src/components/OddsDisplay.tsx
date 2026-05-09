@@ -30,9 +30,16 @@ export const OddsDisplay: React.FC<OddsDisplayProps> = ({
   }
 
   const calculateImpliedProbability = (outcomePool: number) => {
-    if (totalPool === 0) return 0
-    return (outcomePool / totalPool) * 100
+    // Laplace smoothing: blend with uniform prior (1000 BTN virtual liquidity)
+    // to avoid showing misleading 100%/0% at thin liquidity.
+    const prior = 1000
+    const n = outcomes.length || 1
+    const smoothedAmount = outcomePool + prior / n
+    const smoothedTotal = totalPool + prior
+    return (smoothedAmount / smoothedTotal) * 100
   }
+
+  const isThinLiquidity = totalPool > 0 && totalPool < 500
 
   const getMinusPoolWarning = () => {
     const maxPoolShare = Math.max(
@@ -136,6 +143,31 @@ export const OddsDisplay: React.FC<OddsDisplayProps> = ({
         })}
       </div>
 
+      {showWarnings && isThinLiquidity && (
+        <div
+          style={{
+            marginTop: "0.75rem",
+            padding: "0.75rem",
+            borderRadius: "0.375rem",
+            background: "hsl(45 80% 60% / 0.1)",
+            border: "1px solid hsl(45 80% 60%)",
+            color: "hsl(45 80% 50%)",
+            fontSize: "0.75rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.5rem",
+          }}
+        >
+          <AlertTriangle
+            size={14}
+            style={{ marginTop: "0.125rem", flexShrink: 0 }}
+          />
+          <span>
+            ⚠️ Thin liquidity: odds are indicative only. Probabilities are
+            smoothed with a virtual prior to avoid misleading 100%/0% display.
+          </span>
+        </div>
+      )}
       {showWarnings && minusPoolWarning.warning && (
         <div
           style={{
