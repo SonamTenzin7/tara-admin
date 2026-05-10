@@ -25,6 +25,7 @@ interface MarketInitialData {
   mechanism?: string
   liquidityParam?: number
   category?: string | null
+  settlementSource?: string | null
 }
 
 export interface MarketFormData {
@@ -37,6 +38,7 @@ export interface MarketFormData {
   mechanism: string
   liquidityParam: number
   category: string
+  settlementSource: string
 }
 
 interface MarketFormProps {
@@ -98,6 +100,7 @@ const MarketForm: React.FC<MarketFormProps> = ({
     mechanism: initialData?.mechanism || "parimutuel",
     liquidityParam: initialData?.liquidityParam || 1000,
     category: initialData?.category || "other",
+    settlementSource: initialData?.settlementSource || "",
   })
 
   const handleChange = (
@@ -195,6 +198,26 @@ const MarketForm: React.FC<MarketFormProps> = ({
             className="input-field"
             style={{ minHeight: "80px", resize: "vertical" }}
             placeholder="Market details..."
+          />
+        </div>
+
+        <div style={{ marginBottom: "1rem" }}>
+          <label
+            style={{
+              display: "block",
+              marginBottom: "0.5rem",
+              fontSize: "0.75rem",
+              color: "hsl(var(--muted-foreground))",
+            }}
+          >
+            SETTLEMENT SOURCE
+          </label>
+          <input
+            name="settlementSource"
+            value={formData.settlementSource}
+            onChange={handleChange}
+            className="input-field"
+            placeholder="e.g., Bhutan Cricket Board official results"
           />
         </div>
 
