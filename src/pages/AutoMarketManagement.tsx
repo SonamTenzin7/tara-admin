@@ -33,19 +33,40 @@ interface AutoMarket {
   externalSource?: string | null
   outcomes: Outcome[]
   metadata?: {
+    // BTC keys
     referencePrice?: number
     referenceSource?: string
     openedAt?: string
     settlementPrice?: number
     settlementSource?: string
     settledAt?: string
+    // TER keys
+    referenceTerPrice?: number
+    referenceBuyPrice?: number
+    referenceSellPrice?: number
+    openXauUsd?: number
+    settlementTerPrice?: number
+    settlementBuyPrice?: number
+    settlementSellPrice?: number
+    closeXauUsd?: number
   }
   [key: string]: unknown
 }
 
 interface LivePrice {
-  price: number
+  price: number // mid price for TER, last price for BTC
+  buyPrice?: number // TER only
+  sellPrice?: number // TER only
   source: string
+  fetchedAt: string
+}
+
+interface TerPriceResponse {
+  midPrice: number
+  buyPrice: number
+  sellPrice: number
+  xauUsd: number
+  usdInr: number
   fetchedAt: string
 }
 
@@ -141,7 +162,19 @@ const AutoMarketManagement: React.FC<{ source: "ter" | "btc" }> = ({
   const fetchPrice = useCallback(async () => {
     try {
       const res = await api.getAutoPrice(source)
-      if (res) setLivePrice(res as LivePrice)
+      if (!res) return
+      if (source === "ter") {
+        const ter = res as unknown as TerPriceResponse
+        setLivePrice({
+          price: ter.midPrice,
+          buyPrice: ter.buyPrice,
+          sellPrice: ter.sellPrice,
+          source: "ter.bt",
+          fetchedAt: ter.fetchedAt,
+        })
+      } else {
+        setLivePrice(res as unknown as LivePrice)
+      }
     } catch {
       // price fetch fails silently — stale value remains displayed
     }
@@ -184,7 +217,10 @@ const AutoMarketManagement: React.FC<{ source: "ter" | "btc" }> = ({
   const upPct = totalPool > 0 ? Math.round((upPool / totalPool) * 100) : 50
   const downPct = 100 - upPct
 
-  const refPrice = openMarket?.metadata?.referencePrice
+  const refPrice =
+    source === "ter"
+      ? openMarket?.metadata?.referenceTerPrice
+      : openMarket?.metadata?.referencePrice
   const priceDiff =
     livePrice && refPrice != null ? livePrice.price - refPrice : null
   const priceDiffPct =
@@ -323,6 +359,36 @@ const AutoMarketManagement: React.FC<{ source: "ter" | "btc" }> = ({
               >
                 {cfg.pricePrefix} {fmtNum(livePrice.price, cfg.priceDecimals)}
               </div>
+              {livePrice.buyPrice != null && livePrice.sellPrice != null && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 16,
+                    fontSize: "0.75rem",
+                    fontFamily: "monospace",
+                    marginBottom: 4,
+                  }}
+                >
+                  <span>
+                    <span style={{ color: "#22c55e", fontWeight: 700 }}>
+                      Buy{" "}
+                    </span>
+                    <span style={{ color: "hsl(var(--foreground))" }}>
+                      {cfg.pricePrefix}{" "}
+                      {fmtNum(livePrice.buyPrice, cfg.priceDecimals)}
+                    </span>
+                  </span>
+                  <span>
+                    <span style={{ color: "#ef4444", fontWeight: 700 }}>
+                      Sell{" "}
+                    </span>
+                    <span style={{ color: "hsl(var(--foreground))" }}>
+                      {cfg.pricePrefix}{" "}
+                      {fmtNum(livePrice.sellPrice, cfg.priceDecimals)}
+                    </span>
+                  </span>
+                </div>
+              )}
               <div
                 style={{
                   fontSize: "0.75rem",
@@ -577,8 +643,14 @@ const AutoMarketManagement: React.FC<{ source: "ter" | "btc" }> = ({
             </thead>
             <tbody>
               {recentMarkets.slice(0, 30).map((m) => {
-                const ref = m.metadata?.referencePrice
-                const settlement = m.metadata?.settlementPrice
+                const ref =
+                  source === "ter"
+                    ? m.metadata?.referenceTerPrice
+                    : m.metadata?.referencePrice
+                const settlement =
+                  source === "ter"
+                    ? m.metadata?.settlementTerPrice
+                    : m.metadata?.settlementPrice
                 const winner = m.outcomes.find((o) => o.isWinner)
                 const pool = Number(m.totalPool ?? 0)
                 const isUp = winner?.label === "UP"
