@@ -34,9 +34,9 @@ interface TransactionStats {
 interface Dispute {
   id: string
   marketId: string
-  status: string
-  bond: number
-  outcome?: string
+  bondStatus: string
+  bondAmount: number
+  upheld: boolean | null
   createdAt: string
   market?: { title?: string }
   user?: { username?: string; telegramUsername?: string }
@@ -76,11 +76,11 @@ function relativeTime(dateStr: string): string {
 
 function StatusBadge({ status }: { status: string }) {
   const color =
-    status === "completed"
+    status === "completed" || status === "rewarded"
       ? "hsl(142, 70%, 45%)"
-      : status === "pending"
+      : status === "pending" || status === "locked"
         ? "hsl(45, 90%, 55%)"
-        : status === "failed" || status === "rejected"
+        : status === "failed" || status === "rejected" || status === "forfeited"
           ? "hsl(var(--destructive))"
           : "hsl(var(--muted-foreground))"
   return (
@@ -1011,7 +1011,7 @@ function DisputesTab() {
                       {row.user?.telegramUsername ?? row.user?.username ?? "—"}
                     </td>
                     <td style={{ padding: "0.65rem 1rem" }}>
-                      <StatusBadge status={row.status} />
+                      <StatusBadge status={row.bondStatus} />
                     </td>
                     <td
                       style={{
@@ -1020,7 +1020,7 @@ function DisputesTab() {
                         fontWeight: 600,
                       }}
                     >
-                      {Number(row.bond).toLocaleString(undefined, {
+                      {Number(row.bondAmount).toLocaleString(undefined, {
                         maximumFractionDigits: 6,
                       })}
                     </td>
@@ -1028,11 +1028,14 @@ function DisputesTab() {
                       style={{
                         padding: "0.65rem 1rem",
                         color: "hsl(var(--muted-foreground))",
-                        fontFamily: "monospace",
-                        fontSize: "0.76rem",
+                        fontSize: "0.82rem",
                       }}
                     >
-                      {row.outcome ?? "—"}
+                      {row.upheld === true
+                        ? "Upheld"
+                        : row.upheld === false
+                          ? "Overruled"
+                          : "—"}
                     </td>
                   </tr>
                 ))}
