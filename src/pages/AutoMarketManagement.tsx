@@ -292,9 +292,16 @@ const AutoMarketManagement: React.FC<{ source: "ter" | "btc" }> = ({
           </p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           <button onClick={refresh} className="secondary" disabled={fetching}>
-            <RefreshCw size={14} style={{ marginRight: 6 }} />
-            Refresh
+            <RefreshCw
+              size={14}
+              style={{
+                marginRight: 6,
+                animation: fetching ? "spin 0.8s linear infinite" : "none",
+              }}
+            />
+            {fetching ? "Refreshing…" : "Refresh"}
           </button>
           <button
             onClick={handleSpawn}
