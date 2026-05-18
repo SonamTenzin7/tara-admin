@@ -5,6 +5,7 @@ import {
   BarChart3,
   TrendingUp,
   RefreshCw,
+  Trash2,
 } from "lucide-react"
 
 const API_BASE =
@@ -66,12 +67,21 @@ interface Reconciliation {
   }
 }
 
+interface ZeroPoolMarket {
+  id: string
+  title: string
+  createdAt: string
+  status: string
+}
+
 const FinancePage: React.FC = () => {
   const token =
     sessionStorage.getItem("admin_token") || localStorage.getItem("admin_token")
   const [finance, setFinance] = useState<FinanceStats | null>(null)
   const [recon, setRecon] = useState<Reconciliation | null>(null)
+  const [zeroPoolMarkets, setZeroPoolMarkets] = useState<ZeroPoolMarket[]>([])
   const [loading, setLoading] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
@@ -84,11 +94,15 @@ const FinancePage: React.FC = () => {
       fetch(`${API_BASE}/admin/reconciliation`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json()),
+      fetch(`${API_BASE}/admin/markets/settled/zero-pool`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()),
     ])
-      .then(([f, r]) => {
+      .then(([f, r, z]) => {
         if (cancelled) return
         if (f && typeof f.houseIncome === "number") setFinance(f)
         if (r && r.externalFlow && r.reconciliation) setRecon(r)
+        if (Array.isArray(z)) setZeroPoolMarkets(z)
       })
       .catch(() => {})
       .finally(() => {
@@ -100,6 +114,43 @@ const FinancePage: React.FC = () => {
   }, [token, refreshKey])
 
   const fetchData = () => setRefreshKey((k) => k + 1)
+
+  const handleDeleteOne = async (id: string, title: string) => {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return
+    setDeletingId(id)
+    try {
+      await fetch(`${API_BASE}/admin/markets/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setZeroPoolMarkets((prev) => prev.filter((m) => m.id !== id))
+      fetchData()
+    } catch {
+      alert("Failed to delete market.")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handleDeleteAll = async () => {
+    if (
+      !confirm(
+        `Delete all ${zeroPoolMarkets.length} settled zero-volume market(s)? This cannot be undone.`
+      )
+    )
+      return
+    try {
+      const res = await fetch(
+        `${API_BASE}/admin/markets/cleanup/zero-pool-settled`,
+        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+      )
+      const data = await res.json()
+      alert(`Deleted ${data.deleted} market(s).`)
+      fetchData()
+    } catch {
+      alert("Failed to delete markets.")
+    }
+  }
 
   const fmt = (val: number) =>
     `Nu. ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(val || 0)}`
@@ -376,6 +427,167 @@ const FinancePage: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* Zero-volume settled markets */}
+      <div style={{ marginTop: "2rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <div>
+            <h3 style={{ margin: 0 }}>Settled Markets — Zero Volume</h3>
+            <p
+              style={{
+                margin: "0.25rem 0 0",
+                fontSize: "0.8rem",
+                color: "hsl(var(--muted-foreground))",
+              }}
+            >
+              Settled markets with no bets placed. Safe to delete — they carry
+              no pool, no positions, and no payout obligations.
+            </p>
+          </div>
+          {zeroPoolMarkets.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                background: "hsl(var(--destructive))",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                padding: "0.45rem 0.9rem",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              <Trash2 size={14} />
+              Delete All ({zeroPoolMarkets.length})
+            </button>
+          )}
+        </div>
+
+        {zeroPoolMarkets.length === 0 ? (
+          <div
+            className="glass-card"
+            style={{
+              padding: "1.5rem",
+              textAlign: "center",
+              color: "hsl(var(--muted-foreground))",
+              fontSize: "0.85rem",
+            }}
+          >
+            No zero-volume settled markets.
+          </div>
+        ) : (
+          <div
+            className="glass-card"
+            style={{ padding: 0, overflow: "hidden" }}
+          >
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: "0.85rem",
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: "1px solid hsl(var(--border))" }}>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "0.65rem 1rem",
+                      fontWeight: 700,
+                      color: "hsl(var(--muted-foreground))",
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Market
+                  </th>
+                  <th
+                    style={{
+                      textAlign: "left",
+                      padding: "0.65rem 1rem",
+                      fontWeight: 700,
+                      color: "hsl(var(--muted-foreground))",
+                      fontSize: "0.75rem",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Created
+                  </th>
+                  <th style={{ padding: "0.65rem 1rem" }} />
+                </tr>
+              </thead>
+              <tbody>
+                {zeroPoolMarkets.map((m, i) => (
+                  <tr
+                    key={m.id}
+                    style={{
+                      borderBottom:
+                        i < zeroPoolMarkets.length - 1
+                          ? "1px solid hsl(var(--border))"
+                          : "none",
+                    }}
+                  >
+                    <td style={{ padding: "0.65rem 1rem", fontWeight: 500 }}>
+                      {m.title}
+                    </td>
+                    <td
+                      style={{
+                        padding: "0.65rem 1rem",
+                        color: "hsl(var(--muted-foreground))",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {new Date(m.createdAt).toLocaleDateString("en-BT", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td style={{ padding: "0.65rem 1rem", textAlign: "right" }}>
+                      <button
+                        onClick={() => handleDeleteOne(m.id, m.title)}
+                        disabled={deletingId === m.id}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                          background: "none",
+                          border: "1px solid hsl(var(--destructive))",
+                          borderRadius: 5,
+                          padding: "0.3rem 0.65rem",
+                          color: "hsl(var(--destructive))",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          cursor:
+                            deletingId === m.id ? "not-allowed" : "pointer",
+                          opacity: deletingId === m.id ? 0.5 : 1,
+                        }}
+                      >
+                        <Trash2 size={12} />
+                        {deletingId === m.id ? "Deleting…" : "Delete"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

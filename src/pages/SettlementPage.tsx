@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react"
 import { useAdminApi } from "../lib/useAdminApi"
-import { CheckCircle, AlertCircle, RefreshCw, Eye } from "lucide-react"
+import { CheckCircle, AlertCircle, RefreshCw, Eye, Trash2 } from "lucide-react"
 import { SettlementDetails } from "../components/SettlementDetails"
 
 interface Settlement {
   id: string
+  marketId?: string
   market?: { title?: string; houseEdgePct?: number }
   outcome?: { label?: string }
   winningOutcomeId?: string
@@ -20,7 +21,8 @@ const PAGE_SIZE = 20
 
 const SettlementPage: React.FC = () => {
   const token = sessionStorage.getItem("admin_token")
-  const { getSettlements, loading, error } = useAdminApi(token)
+  const { getSettlements, deleteMarket, purgeZeroPoolSettled, loading, error } =
+    useAdminApi(token)
   const [settlements, setSettlements] = useState<Settlement[]>([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -28,6 +30,8 @@ const SettlementPage: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [selectedSettlement, setSelectedSettlement] =
     useState<Settlement | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [purging, setPurging] = useState(false)
 
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -75,6 +79,49 @@ const SettlementPage: React.FC = () => {
 
   const fetchSettlements = () => setRefreshKey((k) => k + 1)
 
+  const zeroVolumeCount = settlements.filter(
+    (s) => parseFloat(String(s.totalPool ?? 0)) === 0
+  ).length
+
+  const handleDeleteMarket = async (s: Settlement) => {
+    if (!s.marketId) return
+    if (
+      !confirm(
+        `Delete "${s.market?.title ?? s.marketId}"? This cannot be undone.`
+      )
+    )
+      return
+    setDeletingId(s.id)
+    try {
+      await deleteMarket(s.marketId)
+      setSettlements((prev) => prev.filter((x) => x.id !== s.id))
+      setTotal((t) => t - 1)
+    } catch {
+      alert("Failed to delete market.")
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const handlePurgeZeroVolume = async () => {
+    if (
+      !confirm(
+        "Delete all settled markets with zero volume? This removes the market and its settlement record. Cannot be undone."
+      )
+    )
+      return
+    setPurging(true)
+    try {
+      const result = (await purgeZeroPoolSettled()) as { deleted: number }
+      fetchSettlements()
+      alert(`Deleted ${result.deleted} zero-volume market(s).`)
+    } catch {
+      alert("Failed to purge zero-volume markets.")
+    } finally {
+      setPurging(false)
+    }
+  }
+
   return (
     <div className="settlement-page">
       <style>{`
@@ -97,24 +144,53 @@ const SettlementPage: React.FC = () => {
             View and manage settled markets and their outcomes.
           </p>
         </div>
-        <button
-          onClick={fetchSettlements}
-          disabled={loading}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-          className="secondary"
-        >
-          <RefreshCw
-            size={16}
-            style={{ animation: loading ? "spin 1s linear infinite" : "none" }}
-          />
-          Refresh
-        </button>
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          {zeroVolumeCount > 0 && (
+            <button
+              onClick={handlePurgeZeroVolume}
+              disabled={purging}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                background: "hsl(var(--destructive))",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                padding: "0.45rem 0.9rem",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                cursor: purging ? "not-allowed" : "pointer",
+                opacity: purging ? 0.6 : 1,
+              }}
+            >
+              <Trash2 size={14} />
+              {purging
+                ? "Deleting…"
+                : `Delete Zero-Volume (${zeroVolumeCount})`}
+            </button>
+          )}
+          <button
+            onClick={fetchSettlements}
+            disabled={loading}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+            className="secondary"
+          >
+            <RefreshCw
+              size={16}
+              style={{
+                animation: loading ? "spin 1s linear infinite" : "none",
+              }}
+            />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {(error || fetchError) && (
@@ -395,24 +471,57 @@ const SettlementPage: React.FC = () => {
                         : "Unknown"}
                     </td>
                     <td style={{ padding: "1rem" }}>
-                      <button
-                        onClick={() =>
-                          setSelectedSettlement(
-                            selectedSettlement === s ? null : s
-                          )
-                        }
-                        className="secondary"
+                      <div
                         style={{
                           display: "flex",
+                          gap: "0.5rem",
                           alignItems: "center",
-                          gap: "0.25rem",
-                          fontSize: "0.75rem",
                         }}
-                        title="View Details"
                       >
-                        <Eye size={14} />
-                        {selectedSettlement === s ? "Hide" : "Details"}
-                      </button>
+                        <button
+                          onClick={() =>
+                            setSelectedSettlement(
+                              selectedSettlement === s ? null : s
+                            )
+                          }
+                          className="secondary"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            fontSize: "0.75rem",
+                          }}
+                          title="View Details"
+                        >
+                          <Eye size={14} />
+                          {selectedSettlement === s ? "Hide" : "Details"}
+                        </button>
+                        {parseFloat(String(s.totalPool ?? 0)) === 0 && (
+                          <button
+                            onClick={() => handleDeleteMarket(s)}
+                            disabled={deletingId === s.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                              background: "none",
+                              border: "1px solid hsl(var(--destructive))",
+                              borderRadius: 5,
+                              padding: "0.3rem 0.6rem",
+                              color: "hsl(var(--destructive))",
+                              cursor:
+                                deletingId === s.id ? "not-allowed" : "pointer",
+                              opacity: deletingId === s.id ? 0.5 : 1,
+                            }}
+                            title="Delete this zero-volume market"
+                          >
+                            <Trash2 size={13} />
+                            {deletingId === s.id ? "…" : "Delete"}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                   {selectedSettlement === s && (
